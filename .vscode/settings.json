@@ -80,7 +80,9 @@
     "codecvt": "cpp",
     "regex": "cpp",
     "future": "cpp",
-    "ranges": "cpp"
+    "ranges": "cpp",
+    "hash_set": "cpp",
+    "charconv": "cpp"
   },
   "prettier.printWidth": 180,
   "editor.formatOnSave": true

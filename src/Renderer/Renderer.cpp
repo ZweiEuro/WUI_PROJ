@@ -80,8 +80,8 @@ namespace render
     void Renderer::renderLoop()
     {
         // this is very important: OpenGL can only draw to a display if the display was created by that thread
-        // This is bc of the opengl context being tied to the thread. This is not a bug and stems from opengl not really
-        // Being multi-thread safe for drawing
+        // This is becuase of the opengl context being tied to the thread. This is not a bug and stems from opengl
+        // Opengl is not really multi-thread draw-safe
         this->init();
 
         // Start the timer

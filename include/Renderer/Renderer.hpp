@@ -16,10 +16,19 @@ namespace render
     const size_t BASE_WIDTH = 640;
     const size_t BASE_HEIGHT = 480;
 
+    /**
+     * A Renderer owns a display and a list of objects that are render-able
+     * The display itself is the event source for closing the window, resizing, etc.
+     *
+     * Multiple renderer may be instanced and started at the same time.
+     *
+     * Any instance also has an OCR buffer for testing the WGUI system library
+     *
+     */
     class Renderer
     {
 
-    private: // Singleton
+    private:
         std::atomic<bool> inited = ATOMIC_VAR_INIT(false);
         void init();
 

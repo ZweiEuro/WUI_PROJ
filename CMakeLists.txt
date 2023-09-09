@@ -36,7 +36,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
   allegro_ttf
   allegro_font
   allegro_dialog
-  spdlog
+  spdlog::spdlog
   Threads::Threads)
 
 

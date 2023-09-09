@@ -18,7 +18,7 @@ namespace objects
         m_angle = 20 + rand() % 20;
         m_color = al_map_rgb(rand() % 255, rand() % 255, rand() % 255);
 
-        // spdlog::info("Ball created at ({}, {}) with radius {}, speed {} and angle {}", m_x, m_y, m_radius, m_speed, m_angle);
+        spdlog::info("Ball created at ({}, {}) with radius {}, speed {} and angle {}", m_x, m_y, m_radius, m_speed, m_angle);
     }
 
     void Ball::render(const size_t displayWidth, const size_t displayHeight, const double delta_t)

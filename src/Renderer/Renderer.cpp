@@ -7,24 +7,18 @@ namespace render
 
 #define FULL_REDRAW 1
 
-    std::atomic<Renderer *> Renderer::pinstance{nullptr};
-    std::mutex Renderer::m_l_instance;
-
-    Renderer &Renderer::instance()
-    {
-        if (pinstance == nullptr)
-        {
-            std::lock_guard<std::mutex> lock(m_l_instance);
-            if (pinstance == nullptr)
-            {
-                pinstance = new Renderer();
-            }
-        }
-        return *pinstance;
-    }
-
     Renderer::Renderer()
     {
+    }
+
+    void Renderer::init()
+    {
+
+        if (this->inited.exchange(true))
+        {
+            spdlog::warn("Renderer already initialized");
+            return;
+        }
 
         if (!al_is_system_installed())
         {
@@ -73,6 +67,8 @@ namespace render
         // Display a black screen, clear the screen once
         al_clear_to_color(al_map_rgb(0, 0, 0));
         al_flip_display();
+
+        spdlog::info("Renderer initialized");
     }
 
     Renderer::~Renderer()
@@ -83,6 +79,11 @@ namespace render
 
     void Renderer::renderLoop()
     {
+        // this is very important: OpenGL can only draw to a display if the display was created by that thread
+        // This is bc of the opengl context being tied to the thread. This is not a bug and stems from opengl not really
+        // Being multi-thread safe for drawing
+        this->init();
+
         // Start the timer
         al_start_timer(m_timer);
         m_running = true;
@@ -93,28 +94,28 @@ namespace render
             ALLEGRO_EVENT event;
 
             // Fetch the event (if one exists)
-            bool get_event = al_wait_for_event_until(m_event_queue, &event, NULL);
+            al_wait_for_event(m_event_queue, &event);
 
             // Handle the event
-            if (get_event)
+
+            switch (event.type)
             {
-                switch (event.type)
-                {
-                case ALLEGRO_EVENT_TIMER:
-                    m_redraw_pending = true;
-                    break;
-                case ALLEGRO_EVENT_DISPLAY_CLOSE:
-                    m_running = false;
-                    break;
-                default:
-                    spdlog::warn("Renderer Unsupported event received: {}", event.type);
-                    break;
-                }
+            case ALLEGRO_EVENT_TIMER:
+                m_redraw_pending = true;
+                break;
+            case ALLEGRO_EVENT_DISPLAY_CLOSE:
+                m_running = false;
+                break;
+            default:
+                spdlog::warn("Renderer Unsupported event received: {}", event.type);
+                break;
             }
 
             // Check if we need to redraw
             if (m_redraw_pending && al_is_event_queue_empty(m_event_queue))
             {
+                // Clear the screen
+                al_clear_to_color(al_map_rgba(0, 0, 0, 0));
 
                 // Redraw
 
@@ -171,11 +172,11 @@ namespace render
 
     void Renderer::shutdown()
     {
-        // spdlog::info("[Renderer] shutting down");
+        spdlog::info("[Renderer] shutdown called");
 
         m_running = false;
         m_render_thread.join();
-        // spdlog::info("[Renderer] shutdown complete");
+        spdlog::info("[Renderer] shutdown complete");
     }
 
     void Renderer::start()
@@ -186,14 +187,16 @@ namespace render
             return;
         }
 
-        // spdlog::info("[Renderer] starting");
+        spdlog::info("[Renderer] starting");
         m_running = true;
         m_render_thread = std::thread(&Renderer::renderLoop, this);
     }
 
     void Renderer::waitUntilEnd()
     {
+        spdlog::info("[Renderer] waiting until end");
         m_render_thread.join();
+        spdlog::info("[Renderer] wait complete");
     }
 
 }

@@ -7,7 +7,8 @@
 
 namespace input
 {
-    void init();
+    void start();
+    void shutdown();
 
     // Wait for external events
     bool wait_for_key(int keycode);

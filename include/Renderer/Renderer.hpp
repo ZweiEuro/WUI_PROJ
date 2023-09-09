@@ -20,13 +20,11 @@ namespace render
     {
 
     private: // Singleton
-        static std::atomic<Renderer *> pinstance;
-        static std::mutex m_l_instance;
-
-        Renderer();
+        std::atomic<bool> inited = ATOMIC_VAR_INIT(false);
+        void init();
 
     public:
-        static Renderer &instance();
+        Renderer();
 
     private:
         // Required always, physical display of allegro

@@ -1,1 +1,1 @@
-target_link_libraries(${PROJECT_NAME} PUBLIC wui.a)
+add_subdirectory(wui)

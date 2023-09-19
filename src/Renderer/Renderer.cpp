@@ -11,22 +11,19 @@ namespace render
     {
     }
 
+    Renderer::~Renderer()
+    {
+        if (m_render_thread.joinable())
+        {
+            spdlog::info("[Renderer] Joining render thread");
+            m_render_thread.join();
+        }
+    }
+
     void Renderer::init()
     {
 
-        if (this->inited.exchange(true))
-        {
-            spdlog::warn("Renderer already initialized");
-            return;
-        }
-
-        if (!al_is_system_installed())
-        {
-
-            spdlog::error("Allegro not installed on Renderer start");
-            al_init();
-            al_init_primitives_addon();
-        }
+        al_init_primitives_addon();
 
         m_display = al_create_display(BASE_WIDTH, BASE_HEIGHT);
 
@@ -71,14 +68,24 @@ namespace render
         spdlog::info("Renderer initialized");
     }
 
-    Renderer::~Renderer()
+    void Renderer::deinit()
     {
-        al_destroy_display(m_display);
+
+        al_destroy_timer(m_timer);
+        m_timer = nullptr;
         al_destroy_event_queue(m_event_queue);
+        m_event_queue = nullptr;
+        al_destroy_bitmap(m_osr_buffer);
+        m_osr_buffer = nullptr;
+        al_destroy_display(m_display);
+        m_display = nullptr;
+
+        spdlog::info("Renderer deinitialized");
     }
 
     void Renderer::renderLoop()
     {
+
         // this is very important: OpenGL can only draw to a display if the display was created by that thread
         // This is becuase of the opengl context being tied to the thread. This is not a bug and stems from opengl
         // Opengl is not really multi-thread draw-safe
@@ -156,11 +163,7 @@ namespace render
             }
         }
 
-        // teardown
-        al_destroy_timer(m_timer);
-        al_destroy_display(m_display);
-        al_destroy_bitmap(m_osr_buffer);
-        al_destroy_event_queue(m_event_queue);
+        this->deinit();
     }
 
     // CefBase interface
@@ -176,26 +179,34 @@ namespace render
 
         m_running = false;
         m_render_thread.join();
+
         spdlog::info("[Renderer] shutdown complete");
     }
 
     void Renderer::start()
     {
-        if (m_running)
+        if (m_render_thread.joinable())
         {
             spdlog::warn("[Renderer] already running");
             return;
         }
 
         spdlog::info("[Renderer] starting");
-        m_running = true;
+
         m_render_thread = std::thread(&Renderer::renderLoop, this);
     }
 
     void Renderer::waitUntilEnd()
     {
         spdlog::info("[Renderer] waiting until end");
-        m_render_thread.join();
+        if (m_render_thread.joinable())
+        {
+            m_render_thread.join();
+        }
+        else
+        {
+            spdlog::warn("[Renderer] not running");
+        }
         spdlog::info("[Renderer] wait complete");
     }
 

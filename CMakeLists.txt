@@ -18,10 +18,10 @@ file(GLOB_RECURSE sources src/*.cpp)
 add_executable(${PROJECT_NAME} ${sources})
 
 #lib files
-add_subdirectory(libs)
+#add_subdirectory(libs)
 
 #header files 
-target_include_directories(${PROJECT_NAME} PRIVATE include/)
+target_include_directories(${PROJECT_NAME} PRIVATE include)
 
 
 # Libraries

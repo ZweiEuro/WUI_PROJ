@@ -28,8 +28,8 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 
-	renderer.start();
 	input::start();
+	renderer.start();
 
 	// esc shutdown
 	std::thread([=]() -> void
@@ -69,7 +69,5 @@ int main(int argc, char *argv[])
 				return; })
 		.detach();
 
-	// renderer.waitUntilEnd();
-
-	pthread_exit(NULL);
+	renderer.waitUntilEnd();
 }

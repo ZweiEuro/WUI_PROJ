@@ -29,11 +29,12 @@ namespace render
     {
 
     private:
-        std::atomic<bool> inited = ATOMIC_VAR_INIT(false);
         void init();
+        void deinit();
 
     public:
         Renderer();
+        ~Renderer();
 
     private:
         // Required always, physical display of allegro
@@ -46,6 +47,7 @@ namespace render
         ALLEGRO_TIMER *m_timer = NULL;
 
         // Gated control for stopping and communication:
+        // Asyncronous stop
         std::atomic<bool> m_running = ATOMIC_VAR_INIT(false);
         std::atomic<bool> m_redraw_pending = ATOMIC_VAR_INIT(false);
 
@@ -66,8 +68,6 @@ namespace render
         std::vector<std::shared_ptr<objects::Renderable>> m_renderables;
 
     public:
-        ~Renderer();
-
         // FrameListener interface
         ALLEGRO_DISPLAY *getDisplay() const;
 

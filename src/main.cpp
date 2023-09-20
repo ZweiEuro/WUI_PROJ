@@ -45,6 +45,7 @@ int main(int argc, char *argv[])
 					spdlog::info("[Main] Shutting down");
 					renderer.shutdown();
 					input::shutdown();
+					renderer.waitUntilEnd();
 					exit(0); // clean exit
 					return; })
 		.detach();
@@ -69,5 +70,5 @@ int main(int argc, char *argv[])
 				return; })
 		.detach();
 
-	renderer.waitUntilEnd();
+	pthread_exit(NULL);
 }

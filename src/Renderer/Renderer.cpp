@@ -178,7 +178,6 @@ namespace render
         spdlog::info("[Renderer] shutdown called");
 
         m_running = false;
-        m_render_thread.join();
 
         spdlog::info("[Renderer] shutdown complete");
     }

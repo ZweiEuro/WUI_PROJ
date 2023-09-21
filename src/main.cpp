@@ -15,10 +15,14 @@
 #include "Input/Input.hpp"
 #include "Renderer/Renderer.hpp"
 
+#include "webUi.hpp"
+
 auto renderer = render::Renderer();
 
 int main(int argc, char *argv[])
 {
+	// first thing to call in your program (Internal Fork)
+	wui::initCEF(argc, argv);
 
 	// init renderer and display
 

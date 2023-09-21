@@ -21,13 +21,19 @@
     {
       "label": "run",
       "type": "shell",
-      "command": "${workspaceFolder}/build/wui_example"
+      "command": "${workspaceFolder}/build/Debug/wui_example",
+      "options": {
+        "cwd": "${workspaceFolder}/build/Debug"
+      }
     },
     {
       "label": "build and run",
       "type": "shell",
       "dependsOn": ["build"],
-      "command": "${workspaceFolder}/build/wui_example",
+      "command": "${workspaceFolder}/build/Debug/wui_example",
+      "options": {
+        "cwd": "${workspaceFolder}/build/Debug"
+      },
       "problemMatcher": ["$gcc"]
     }
   ]

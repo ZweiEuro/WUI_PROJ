@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Example Domain</title>
+
+    <meta charset="utf-8" />
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style type="text/css">
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: -apple-system, system-ui, BlinkMacSystemFont, 'Segoe UI', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      }
+      div {
+        width: 600px;
+        margin: 5em auto;
+        padding: 2em;
+        background-color: #fdfdff77;
+        border-radius: 0.5em;
+        box-shadow: 2px 3px 7px 2px rgba(0, 0, 0, 0.02);
+      }
+      a:link,
+      a:visited {
+        color: #38488f;
+        text-decoration: none;
+      }
+      @media (max-width: 700px) {
+        div {
+          margin: 0 auto;
+          width: auto;
+        }
+      }
+    </style>
+  </head>
+
+  <script>
+    function incrementValue() {
+      var value = parseInt(document.getElementById('manual').value, 10);
+      value = isNaN(value) ? 0 : value;
+      value++;
+      document.getElementById('manual').value = value;
+    }
+
+    setInterval(function () {
+      var value = parseInt(document.getElementById('auto').value, 10);
+      value = isNaN(value) ? 0 : value;
+      value++;
+      document.getElementById('auto').value = value;
+    }, 1000);
+  </script>
+
+  <body>
+    <div>
+      <h1>Example Domain</h1>
+      <p>Lorem ipsum yes etc</p>
+
+      <input type="text" id="auto" value="0" />
+      <input type="text" id="manual" value="0" />
+
+      <input type="button" onclick="incrementValue()" value="Increment Value" />
+    </div>
+  </body>
+</html>

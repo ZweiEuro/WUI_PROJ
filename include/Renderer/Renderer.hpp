@@ -32,6 +32,10 @@ namespace render
         void init();
         void deinit();
 
+        size_t height = BASE_HEIGHT;
+        size_t width = BASE_WIDTH;
+        size_t fps = BASE_FPS;
+
     public:
         Renderer();
         ~Renderer();
@@ -55,11 +59,12 @@ namespace render
         std::thread m_render_thread;
         void renderLoop();
 
+        // Pointer to the current display bitmap, void* to RGBA( width * height * 4)
+        void *wui_rgba_bitmap = nullptr;
+
     private: // OSR buffer rendering
         // Main off screen rendering buffer where the CEF will render into
         ALLEGRO_BITMAP *m_osr_buffer = NULL;
-        // Lock for the osr buffer
-        std::mutex m_l_osr_buffer_lock;
 
     private:
         // Register of all game objects that are to be rendered

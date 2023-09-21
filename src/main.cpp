@@ -22,7 +22,7 @@ auto renderer = render::Renderer();
 int main(int argc, char *argv[])
 {
 	// first thing to call in your program (Internal Fork)
-	wui::initCEF(argc, argv);
+	wui::CEFInit(argc, argv);
 
 	// init renderer and display
 
@@ -47,8 +47,10 @@ int main(int argc, char *argv[])
 					}
 
 					spdlog::info("[Main] Shutting down");
+					wui::CEFShutdown();
 					renderer.shutdown();
 					input::shutdown();
+					
 					renderer.waitUntilEnd();
 					exit(0); // clean exit
 					return; })
@@ -73,6 +75,8 @@ int main(int argc, char *argv[])
 				  	}
 				return; })
 		.detach();
+
+	wui::CEFRunMessageLoop();
 
 	pthread_exit(NULL);
 }

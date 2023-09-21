@@ -1,11 +1,10 @@
 #include "Renderer/Renderer.hpp"
 #include "spdlog/spdlog.h"
+#include "webUi.hpp"
 
 #include <allegro5/allegro_primitives.h>
 namespace render
 {
-
-#define FULL_REDRAW 1
 
     Renderer::Renderer()
     {
@@ -25,11 +24,11 @@ namespace render
 
         al_init_primitives_addon();
 
-        m_display = al_create_display(BASE_WIDTH, BASE_HEIGHT);
+        m_display = al_create_display(width, height);
 
         al_set_new_bitmap_flags(ALLEGRO_MEMORY_BITMAP); // use memory bitmap for OSR buffer
 
-        m_osr_buffer = al_create_bitmap(BASE_WIDTH, BASE_HEIGHT);
+        m_osr_buffer = al_create_bitmap(width, height);
 
         if (!m_display || !m_osr_buffer)
         {
@@ -39,10 +38,10 @@ namespace render
 
         // clear entire bitmap to white (osr buffer)
         auto locked_region = al_lock_bitmap(m_osr_buffer, ALLEGRO_PIXEL_FORMAT_RGBA_8888, ALLEGRO_LOCK_WRITEONLY);
-        memset(locked_region->data, 0, BASE_WIDTH * BASE_HEIGHT * locked_region->pixel_size);
+        memset(locked_region->data, 0, width * height * locked_region->pixel_size);
         al_unlock_bitmap(m_osr_buffer);
 
-        m_timer = al_create_timer(1.0 / BASE_FPS);
+        m_timer = al_create_timer(1.0 / fps);
         if (!m_timer)
         {
             spdlog::error("Failed to create timer");
@@ -140,22 +139,26 @@ namespace render
                 m_l_renderables.lock();
                 for (auto &renderable : m_renderables)
                 {
-                    renderable->render(al_get_display_width(m_display),
-                                       al_get_display_height(m_display), delta_s);
+                    renderable->render(width,
+                                       height, delta_s);
                 }
                 m_l_renderables.unlock();
 
                 // draw OSR buffer over the screen,
-                //
-                if (m_l_osr_buffer_lock.try_lock())
+                if (wui_rgba_bitmap != nullptr)
                 {
                     // al_set_blender(ALLEGRO_ADD, ALLEGRO_ONE, ALLEGRO_ZERO);
+
+                    // copy over bitmap
+                    auto locked_region = al_lock_bitmap(m_osr_buffer, ALLEGRO_PIXEL_FORMAT_RGBA_8888, ALLEGRO_LOCK_WRITEONLY);
+                    memcpy(locked_region->data, wui_rgba_bitmap, width * height * locked_region->pixel_size);
+                    al_unlock_bitmap(m_osr_buffer);
+
                     al_draw_bitmap(m_osr_buffer, 0, 0, 0);
-                    m_l_osr_buffer_lock.unlock();
                 }
                 else
                 {
-                    spdlog::warn("OSR buffer locked, skipping redraw");
+                    spdlog::warn("wui_rgba_bitmap is null");
                 }
 
                 al_flip_display();
@@ -191,6 +194,8 @@ namespace render
         }
 
         spdlog::info("[Renderer] starting");
+
+        assert(wui::startWui(&wui_rgba_bitmap, width, height) && "Failed to start WUI");
 
         m_render_thread = std::thread(&Renderer::renderLoop, this);
     }

@@ -149,7 +149,7 @@ namespace input
             al_wait_for_event(m_hardware_event_sources_queue, &event);
 
             // Handle the event
-
+            bool wasUiEvent = false;
             switch (event.type)
             {
             case ALLEGRO_EVENT_MOUSE_AXES:
@@ -175,7 +175,7 @@ namespace input
                 spdlog::info("[Input] mouse button down {}, @ {} {}", event.mouse.button == 1 ? "left" : "right", event.mouse.x, event.mouse.y);
 
                 const wui::wui_mouse_event_t ev = convertMouseEvent(event);
-                wui::CEFSendMouseClickEvent(ev, event.mouse.button == 1 ? wui::MBT_LEFT : wui::MBT_RIGHT, false, 1);
+                wasUiEvent = wui::CEFSendMouseClickEvent(ev, event.mouse.button == 1 ? wui::MBT_LEFT : wui::MBT_RIGHT, false, 1);
 
                 break;
             }
@@ -184,7 +184,7 @@ namespace input
                 spdlog::info("[Input] mouse button up {}, @ {} {}", event.mouse.button == 1 ? "left" : "right", event.mouse.x, event.mouse.y);
 
                 const wui::wui_mouse_event_t ev = convertMouseEvent(event);
-                wui::CEFSendMouseClickEvent(ev, event.mouse.button == 1 ? wui::MBT_LEFT : wui::MBT_RIGHT, true, 1);
+                wasUiEvent = wui::CEFSendMouseClickEvent(ev, event.mouse.button == 1 ? wui::MBT_LEFT : wui::MBT_RIGHT, true, 1);
                 break;
             }
 
@@ -205,7 +205,12 @@ namespace input
                 // spdlog::info("[Input] event received: {}", event.type);
                 break;
             }
-            al_emit_user_event(&m_manager_event_source, &event, nullptr);
+
+            if (!wasUiEvent)
+            {
+
+                al_emit_user_event(&m_manager_event_source, &event, nullptr);
+            }
         }
         spdlog::info("[Input] Exit");
 

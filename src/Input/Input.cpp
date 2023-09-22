@@ -1,5 +1,6 @@
 #include "Input/Input.hpp"
 #include "Enums.hpp"
+#include "webUiInput.hpp"
 
 #include <spdlog/spdlog.h>
 
@@ -125,6 +126,16 @@ namespace input
         return ret;
     }
 
+    wui::wui_mouse_event_t convertMouseEvent(ALLEGRO_EVENT &event)
+    {
+
+        return (wui::wui_mouse_event_t){
+            .x = event.mouse.x,
+            .y = event.mouse.y,
+            .modifiers = 0,
+        };
+    }
+
     void input_loop()
     {
         // start the main receiving loop
@@ -143,21 +154,39 @@ namespace input
             {
             case ALLEGRO_EVENT_MOUSE_AXES:
 
+            {
                 l_mouse_state.lock();
                 m_mouse_state.x = event.mouse.x;
                 m_mouse_state.y = event.mouse.y;
                 l_mouse_state.unlock();
 
-                break;
+                const wui::wui_mouse_event_t ev = convertMouseEvent(event);
+
+                wui::CEFSendMouseMoveEvent(ev, false);
+            }
+
+            break;
             case ALLEGRO_EVENT_KEY_DOWN:
                 spdlog::info("[Input] key down {}", al_keycode_to_name(event.keyboard.keycode));
+
                 break;
             case ALLEGRO_EVENT_MOUSE_BUTTON_DOWN:
+            {
                 spdlog::info("[Input] mouse button down {}, @ {} {}", event.mouse.button == 1 ? "left" : "right", event.mouse.x, event.mouse.y);
+
+                const wui::wui_mouse_event_t ev = convertMouseEvent(event);
+                wui::CEFSendMouseClickEvent(ev, event.mouse.button == 1 ? wui::MBT_LEFT : wui::MBT_RIGHT, false, 1);
+
                 break;
+            }
             case ALLEGRO_EVENT_MOUSE_BUTTON_UP:
+            {
                 spdlog::info("[Input] mouse button up {}, @ {} {}", event.mouse.button == 1 ? "left" : "right", event.mouse.x, event.mouse.y);
+
+                const wui::wui_mouse_event_t ev = convertMouseEvent(event);
+                wui::CEFSendMouseClickEvent(ev, event.mouse.button == 1 ? wui::MBT_LEFT : wui::MBT_RIGHT, true, 1);
                 break;
+            }
 
             case ALLEGRO_EVENT_MOUSE_ENTER_DISPLAY:
             case ALLEGRO_EVENT_MOUSE_LEAVE_DISPLAY:
@@ -169,6 +198,7 @@ namespace input
             case ALLEGRO_EVENT_KEY_UP:
                 // ignore all type events or key up events
 
+                // TODO: Keyboard events
                 break;
 
             default:

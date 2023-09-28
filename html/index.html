@@ -12,13 +12,14 @@
         padding: 0;
         font-family: -apple-system, system-ui, BlinkMacSystemFont, 'Segoe UI', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
       }
+      .container {
+        background-color: #fdfdff77;
+        border-radius: 20px;
+      }
       div {
         width: 600px;
         margin: 5em auto;
         padding: 2em;
-        background-color: #fdfdff77;
-        border-radius: 0.5em;
-        box-shadow: 2px 3px 7px 2px rgba(0, 0, 0, 0.02);
       }
       @media (max-width: 700px) {
         div {
@@ -46,7 +47,7 @@
   </script>
 
   <body>
-    <div>
+    <div class="container">
       <h1>Example Head Element</h1>
       <p>Autom incremental value on the left, on the right a manually incremented field</p>
 
@@ -54,6 +55,13 @@
       <input type="text" id="manual" value="0" />
 
       <input type="button" onclick="incrementValue()" value="Increment Value" />
+
+      <div style="display: flex; justify-content: flex-start">
+        <!--- Write all 3 colors -->
+        <div style="background: linear-gradient(to bottom, #ff0000ff, #ff0000ff); width: 20px; height: 20px">red</div>
+        <div style="background: linear-gradient(to bottom, #00ff00ff, #00ff00ff); width: 20px; height: 20px">green</div>
+        <div style="background: linear-gradient(to bottom, #0000ffff, #0000ffff); width: 20px; height: 20px">blue</div>
+      </div>
     </div>
   </body>
 </html>

@@ -37,8 +37,9 @@ namespace render
         }
 
         // clear entire bitmap to white (osr buffer)
-        auto locked_region = al_lock_bitmap(m_osr_buffer, ALLEGRO_PIXEL_FORMAT_RGBA_8888, ALLEGRO_LOCK_WRITEONLY);
-        memset(locked_region->data, 0, width * height * locked_region->pixel_size);
+        // NOTE: Allegro pixel buffers are High -> LOW, so on ALLEGRO_PIXEL_FORMAT_ARGB_8888, a buffer access at [0] = Blue
+        auto locked_region = al_lock_bitmap(m_osr_buffer, ALLEGRO_PIXEL_FORMAT_ARGB_8888, ALLEGRO_LOCK_WRITEONLY);
+        memset(locked_region->data, 0, width * height * 4);
         al_unlock_bitmap(m_osr_buffer);
 
         m_timer = al_create_timer(1.0 / fps);
@@ -150,8 +151,8 @@ namespace render
                     // al_set_blender(ALLEGRO_ADD, ALLEGRO_ONE, ALLEGRO_ZERO);
 
                     // copy over bitmap
-                    auto locked_region = al_lock_bitmap(m_osr_buffer, ALLEGRO_PIXEL_FORMAT_RGBA_8888, ALLEGRO_LOCK_WRITEONLY);
-                    memcpy(locked_region->data, wui_rgba_bitmap, width * height * locked_region->pixel_size);
+                    auto locked_region = al_lock_bitmap(m_osr_buffer, ALLEGRO_PIXEL_FORMAT_ARGB_8888, ALLEGRO_LOCK_WRITEONLY);
+                    memcpy(locked_region->data, wui_rgba_bitmap, width * height * 4);
                     al_unlock_bitmap(m_osr_buffer);
 
                     al_draw_bitmap(m_osr_buffer, 0, 0, 0);

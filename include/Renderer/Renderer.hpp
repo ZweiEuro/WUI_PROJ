@@ -65,6 +65,7 @@ namespace render
     private: // OSR buffer rendering
         // Main off screen rendering buffer where the CEF will render into
         ALLEGRO_BITMAP *m_osr_buffer = NULL;
+        std::mutex m_l_osr_buffer_lock;
 
     private:
         // Register of all game objects that are to be rendered

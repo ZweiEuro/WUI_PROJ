@@ -24,6 +24,8 @@ namespace render
 
         al_init_primitives_addon();
 
+        al_set_new_display_flags(ALLEGRO_RESIZABLE | ALLEGRO_WINDOWED);
+
         m_display = al_create_display(width, height);
 
         al_set_new_bitmap_flags(ALLEGRO_MEMORY_BITMAP); // use memory bitmap for OSR buffer
@@ -113,6 +115,31 @@ namespace render
             case ALLEGRO_EVENT_DISPLAY_CLOSE:
                 m_running = false;
                 break;
+            case ALLEGRO_EVENT_DISPLAY_RESIZE:
+            {
+                spdlog::info("Renderer resize event received: {}x{}", event.display.width, event.display.height);
+                this->m_l_osr_buffer_lock.lock();
+                al_destroy_bitmap(this->m_osr_buffer);
+
+                this->width = event.display.width;
+                this->height = event.display.height;
+
+                al_set_new_bitmap_format(ALLEGRO_PIXEL_FORMAT_ARGB_8888);
+                this->m_osr_buffer = al_create_bitmap(this->width, this->height);
+                assert(this->m_osr_buffer != nullptr && "Failed to create OSR buffer resize");
+
+                auto locked_region = al_lock_bitmap(this->m_osr_buffer, ALLEGRO_PIXEL_FORMAT_ARGB_8888, ALLEGRO_LOCK_WRITEONLY);
+                memset(locked_region->data, 0, this->width * this->height * 4);
+                al_unlock_bitmap(this->m_osr_buffer);
+
+                wui::resizeUi(this->width, this->height);
+
+                al_acknowledge_resize(m_display);
+
+                this->m_l_osr_buffer_lock.unlock();
+            }
+
+            break;
             default:
                 spdlog::warn("Renderer Unsupported event received: {}", event.type);
                 break;
@@ -146,7 +173,7 @@ namespace render
                 m_l_renderables.unlock();
 
                 // draw OSR buffer over the screen,
-                if (wui_rgba_bitmap != nullptr)
+                if (this->m_l_osr_buffer_lock.try_lock() && this->wui_rgba_bitmap != nullptr)
                 {
                     // al_set_blender(ALLEGRO_ADD, ALLEGRO_ONE, ALLEGRO_ZERO);
 
@@ -155,6 +182,7 @@ namespace render
                     memcpy(locked_region->data, wui_rgba_bitmap, width * height * 4);
                     al_unlock_bitmap(m_osr_buffer);
 
+                    this->m_l_osr_buffer_lock.unlock();
                     al_draw_bitmap(m_osr_buffer, 0, 0, 0);
                 }
                 else

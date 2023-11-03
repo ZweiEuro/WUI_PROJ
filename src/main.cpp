@@ -16,13 +16,20 @@
 #include "Renderer/Renderer.hpp"
 
 #include "webUi.hpp"
-
+#include "webUiBinding.hpp"
 auto renderer = render::Renderer();
 
 int main(int argc, char *argv[])
 {
 	// first thing to call in your program (Internal Fork)
 	wui::CEFInit(argc, argv);
+
+	wui::registerEventListener("TestEvent", [](const cJSON *load, cJSON *retval, std::string &exc) -> int
+							   {
+								auto p = cJSON_Print(load);
+								spdlog::info("Payload: {} ", p);
+								free(p); 
+								return 0; });
 
 	// init renderer and display
 

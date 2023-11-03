@@ -30,7 +30,34 @@
     </style>
   </head>
 
-  <script>
+  <script language="JavaScript">
+    function wuiSendEvent(event, payload) {
+      return new Promise(function (resolve, reject) {
+        window.WuiQuery({
+          request: JSON.stringify({ wuiEventName: event, wuiEventPayload: payload }),
+          onSuccess: function (response) {
+            resolve(response);
+          },
+          onFailure: function (error_code, error_message) {
+            reject(error_code, error_message);
+          },
+        });
+      });
+    }
+
+    // Send a query to the browser process.
+    function sendQueryMessage() {
+      // Results in a call to the OnQuery method in client_impl.cc.
+
+      wuiSendEvent('TestEvent', { test: 'test' })
+        .then((res) => {
+          console.log(res);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    }
+
     function incrementValue() {
       var value = parseInt(document.getElementById('manual').value, 10);
       value = isNaN(value) ? 0 : value;
@@ -49,6 +76,8 @@
   <body>
     <div class="container">
       <h1>Example Head Element</h1>
+      <button onclick="sendQueryMessage()">testEvent</button>
+
       <p>Autom incremental value on the left, on the right a manually incremented field</p>
 
       <input type="text" id="auto" value="0" />

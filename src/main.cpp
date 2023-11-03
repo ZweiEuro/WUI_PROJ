@@ -17,19 +17,11 @@
 
 #include "webUi.hpp"
 #include "webUiBinding.hpp"
-auto renderer = render::Renderer();
 
 int main(int argc, char *argv[])
 {
 	// first thing to call in your program (Internal Fork)
 	wui::CEFInit(argc, argv);
-
-	wui::registerEventListener("TestEvent", [](const cJSON *load, cJSON *retval, std::string &exc) -> int
-							   {
-								auto p = cJSON_Print(load);
-								spdlog::info("Payload: {} ", p);
-								free(p); 
-								return 0; });
 
 	// init renderer and display
 
@@ -40,7 +32,7 @@ int main(int argc, char *argv[])
 	}
 
 	input::start();
-	renderer.start();
+	render::renderer.start();
 
 	// esc shutdown
 	std::thread([=]() -> void
@@ -55,10 +47,10 @@ int main(int argc, char *argv[])
 
 					spdlog::info("[Main] Shutting down");
 					wui::CEFShutdown();
-					renderer.shutdown();
+					render::renderer.shutdown();
 					input::shutdown();
 					
-					renderer.waitUntilEnd();
+					render::renderer.waitUntilEnd();
 					exit(0); // clean exit
 					return; })
 		.detach();
@@ -77,30 +69,8 @@ int main(int argc, char *argv[])
 						}
 
 						spdlog::info("Adding ball at {} {}", pos.x, pos.y);
-						renderer.addObject(std::make_shared<objects::Ball>(pos.x, pos.y));
+						render::renderer.addObject(std::make_shared<objects::Ball>(pos.x, pos.y));
 				  	}
-				return; })
-		.detach();
-
-	// test send spacebar events to js
-	std::thread([=]() -> void
-				{
-                	while (true)
-                	{
-						vec2i pos;
-                    	auto ok = input::wait_for_key(							ALLEGRO_KEY_SPACE						);
-						if (!ok)
-						{
-							spdlog::info("Stop space listener");
-							return;
-						}
-
-						spdlog::info("Sending space event to js");
-						cJSON *payload = cJSON_CreateObject();
-						cJSON_AddStringToObject(payload, "test", "test");
-						wui::sendEvent("TestEvent", payload);
-						cJSON_Delete(payload);
-					}
 				return; })
 		.detach();
 

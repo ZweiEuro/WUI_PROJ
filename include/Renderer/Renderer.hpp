@@ -10,6 +10,8 @@
 
 #include "Objects/Renderable.hpp"
 
+#include "webUiBinding.hpp"
+
 namespace render
 {
     const size_t BASE_FPS = 60;
@@ -81,6 +83,8 @@ namespace render
         void start();
         void waitUntilEnd();
 
+        int handleDeleteObject(const cJSON *load, cJSON *retval, std::string &exc);
+
         // object management
     public:
         void addObject(std::shared_ptr<objects::Renderable> renderable)
@@ -91,4 +95,5 @@ namespace render
         }
     };
 
+    extern Renderer renderer;
 }

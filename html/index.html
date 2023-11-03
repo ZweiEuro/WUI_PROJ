@@ -9,23 +9,42 @@
     <style type="text/css">
       body {
         margin: 0;
-        padding: 0;
+        padding: 20px;
+        display: flex;
+        flex-direction: row;
+        height: 100vh;
         font-family: -apple-system, system-ui, BlinkMacSystemFont, 'Segoe UI', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
       }
+
+      .mainBody {
+        height: 80%;
+      }
+
+      .colorBox {
+        width: 10px;
+        height: 10px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 2em;
+      }
+
       .container {
         background-color: #fdfdff77;
         border-radius: 20px;
+        padding: 20px;
       }
+
       div {
-        width: 600px;
-        margin: 5em auto;
-        padding: 2em;
+        margin-top: 10px;
       }
-      @media (max-width: 700px) {
-        div {
-          margin: 0 auto;
-          width: auto;
-        }
+
+      .ballInfoDiv {
+        display: flex;
+        flex-direction: row;
+        justify-content: flex-start;
+        align-items: center;
+        background-color: white;
       }
     </style>
   </head>
@@ -50,15 +69,75 @@
       window.WuiQuery({
         persistent: true,
         request: JSON.stringify({ wuiEventName: event }),
-        onSuccess: callback,
+        onSuccess: function (payloadString) {
+          let payload = JSON.parse(payloadString);
+          callback(payload);
+        },
         onFailure: function (error_code, error_message) {
           console.warn('Error in wuiRegisterEventListener: ' + error_code + ' ' + error_message);
         },
       });
     }
 
-    wuiRegisterEventListener('TestEvent', function (response) {
-      console.log(response);
+    var lastTimeupdated = 0;
+
+    wuiRegisterEventListener('BallInfo', function (response) {
+      // only allow updates every 5s
+
+      if (Date.now() - lastTimeupdated < 10) {
+        return;
+      }
+
+      lastTimeupdated = Date.now();
+
+      let ballInfoContainer = document.getElementById('ballInfoContainer');
+
+      if (Object.entries(response).length === 0) {
+        if (ballInfoContainer.children.length !== 0) {
+          ballInfoContainer.replaceChildren();
+        }
+      }
+
+      // delete all children that no longer exist
+
+      if (ballInfoContainer.children.length > 0) {
+        for (const child of ballInfoContainer.children) {
+          if (response[child.id.replace('ballInfo', '')] === undefined) {
+            ballInfoContainer.removeChild(child);
+          }
+        }
+      }
+
+      // go through all elements and update the text if appropriate
+      // do not recreate the button each time
+      for (const [key, value] of Object.entries(response)) {
+        let currentElement = document.getElementById('ballInfo' + key);
+
+        if (currentElement) {
+          let positionText = document.getElementById('ballInfo' + key).children[1];
+          positionText.innerHTML = 'Position: ' + JSON.stringify(value);
+          continue;
+        } else {
+          let subDiv = document.createElement('div');
+          subDiv.className = 'ballInfoDiv';
+          subDiv.id = 'ballInfo' + key;
+
+          let button = document.createElement('button');
+          button.innerHTML = 'delete';
+          button.onclick = function () {
+            console.log('delete ' + key);
+            wuiSendEvent('DeleteBall', { id: Number(key) });
+          };
+
+          subDiv.appendChild(button);
+
+          let positionText = document.createElement('div');
+          positionText.innerHTML = 'Position: ' + JSON.stringify(value);
+          subDiv.appendChild(positionText);
+
+          ballInfoContainer.appendChild(subDiv);
+        }
+      }
     });
 
     // Send a query to the browser process.
@@ -90,23 +169,25 @@
   </script>
 
   <body>
-    <div class="container">
-      <h1>Example Head Element</h1>
-      <button onclick="sendQueryMessage()">testEvent</button>
+    <div class="mainBody">
+      <div class="container">
+        <h1>Example Head Element</h1>
+        <button onclick="sendQueryMessage()">testEvent</button>
 
-      <p>Autom incremental value on the left, on the right a manually incremented field</p>
+        <p>Autom incremental value on the left, on the right a manually incremented field</p>
 
-      <input type="text" id="auto" value="0" />
-      <input type="text" id="manual" value="0" />
+        <input type="text" id="auto" value="0" />
+        <input type="text" id="manual" value="0" />
 
-      <input type="button" onclick="incrementValue()" value="Increment Value" />
+        <input type="button" onclick="incrementValue()" value="Increment Value" />
 
-      <div style="display: flex; justify-content: flex-start">
-        <!--- Write all 3 colors -->
-        <div style="background: linear-gradient(to bottom, #ff0000ff, #ff0000ff); width: 20px; height: 20px">red</div>
-        <div style="background: linear-gradient(to bottom, #00ff00ff, #00ff00ff); width: 20px; height: 20px">green</div>
-        <div style="background: linear-gradient(to bottom, #0000ffff, #0000ffff); width: 20px; height: 20px">blue</div>
+        <div style="display: flex; justify-content: flex-start; gap: 20px">
+          <div class="colorBox" style="background: linear-gradient(to bottom, #ff0000ff, #ff0000ff)">red</div>
+          <div class="colorBox" style="background: linear-gradient(to bottom, #00ff00ff, #00ff00ff)">green</div>
+          <div class="colorBox" style="background: linear-gradient(to bottom, #0000ffff, #0000ffff)">blue</div>
+        </div>
       </div>
+      <div id="ballInfoContainer"></div>
     </div>
   </body>
 </html>

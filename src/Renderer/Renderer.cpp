@@ -1,10 +1,12 @@
 #include "Renderer/Renderer.hpp"
 #include "spdlog/spdlog.h"
 #include "webUi.hpp"
+#include "webUiBinding.hpp"
 
 #include <allegro5/allegro_primitives.h>
 namespace render
 {
+    Renderer renderer = render::Renderer();
 
     Renderer::Renderer()
     {
@@ -164,13 +166,28 @@ namespace render
                     last_delta_time_point = end;
                 }
 
+                cJSON *ballInfoObject = cJSON_CreateObject();
+
+                // create a map with ball id as key and position as value
+
                 m_l_renderables.lock();
                 for (auto &renderable : m_renderables)
                 {
                     renderable->render(width,
                                        height, delta_s);
+
+                    auto thisBallInfo = cJSON_CreateObject();
+
+                    auto pos = renderable->getPosition();
+
+                    cJSON_AddNumberToObject(thisBallInfo, "x", pos.x);
+                    cJSON_AddNumberToObject(thisBallInfo, "y", pos.y);
+
+                    cJSON_AddItemToObject(ballInfoObject, std::to_string(renderable->getId()).c_str(), thisBallInfo);
                 }
                 m_l_renderables.unlock();
+
+                wui::sendEvent("BallInfo", ballInfoObject);
 
                 // draw OSR buffer over the screen,
                 if (this->m_l_osr_buffer_lock.try_lock() && this->wui_rgba_bitmap != nullptr)
@@ -214,6 +231,36 @@ namespace render
         spdlog::info("[Renderer] shutdown complete");
     }
 
+    int Renderer::handleDeleteObject(const cJSON *load, cJSON *retval, std::string &exc)
+    {
+        auto id = cJSON_GetObjectItem(load, "id");
+        if (id == nullptr)
+        {
+            spdlog::error("DeleteBall: id not found");
+            return -1;
+        }
+
+        auto idInt = id->valueint;
+
+        spdlog::info("DeleteBall: id: {}", idInt);
+
+        m_l_renderables.lock();
+
+        for (auto it = m_renderables.begin(); it != m_renderables.end(); ++it)
+        {
+            if ((*it)->getId() == idInt)
+            {
+                spdlog::info("DeleteBall: found ball with id: {}", idInt);
+                m_renderables.erase(it);
+                break;
+            }
+        }
+
+        m_l_renderables.unlock();
+
+        return 0;
+    }
+
     void Renderer::start()
     {
         if (m_render_thread.joinable())
@@ -223,6 +270,9 @@ namespace render
         }
 
         spdlog::info("[Renderer] starting");
+
+        wui::registerEventListener("DeleteBall", [](const cJSON *load, cJSON *retval, std::string &exc) -> int
+                                   { return renderer.handleDeleteObject(load, retval, exc); });
 
         assert(wui::startWui(&wui_rgba_bitmap, width, height) && "Failed to start WUI");
 

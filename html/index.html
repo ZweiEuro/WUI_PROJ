@@ -34,6 +34,7 @@
     function wuiSendEvent(event, payload) {
       return new Promise(function (resolve, reject) {
         window.WuiQuery({
+          persistent: false,
           request: JSON.stringify({ wuiEventName: event, wuiEventPayload: payload }),
           onSuccess: function (response) {
             resolve(response);
@@ -44,6 +45,21 @@
         });
       });
     }
+
+    function wuiRegisterEventListener(event, callback) {
+      window.WuiQuery({
+        persistent: true,
+        request: JSON.stringify({ wuiEventName: event }),
+        onSuccess: callback,
+        onFailure: function (error_code, error_message) {
+          console.warn('Error in wuiRegisterEventListener: ' + error_code + ' ' + error_message);
+        },
+      });
+    }
+
+    wuiRegisterEventListener('TestEvent', function (response) {
+      console.log(response);
+    });
 
     // Send a query to the browser process.
     function sendQueryMessage() {

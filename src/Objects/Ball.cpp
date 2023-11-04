@@ -54,4 +54,8 @@ namespace objects
         al_draw_filled_circle(m_x, m_y, m_radius, m_color);
     }
 
+    ALLEGRO_COLOR Ball::getColor() const
+    {
+        return m_color;
+    }
 }

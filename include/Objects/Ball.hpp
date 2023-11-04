@@ -18,6 +18,8 @@ namespace objects
     public:
         Ball(int x, int y);
         void render(const size_t displayWidth, const size_t displayHeight, const double delta_t) override;
+
+        ALLEGRO_COLOR getColor() const;
     };
 
 }

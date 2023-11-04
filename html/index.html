@@ -45,6 +45,10 @@
         justify-content: flex-start;
         align-items: center;
         background-color: white;
+        gap: 10px;
+        border-radius: 10px;
+        padding: 10px;
+        width: fit-content;
       }
     </style>
   </head>
@@ -79,16 +83,8 @@
       });
     }
 
-    var lastTimeupdated = 0;
-
     wuiRegisterEventListener('BallInfo', function (response) {
       // only allow updates every 5s
-
-      if (Date.now() - lastTimeupdated < 10) {
-        return;
-      }
-
-      lastTimeupdated = Date.now();
 
       let ballInfoContainer = document.getElementById('ballInfoContainer');
 
@@ -114,8 +110,8 @@
         let currentElement = document.getElementById('ballInfo' + key);
 
         if (currentElement) {
-          let positionText = document.getElementById('ballInfo' + key).children[1];
-          positionText.innerHTML = 'Position: ' + JSON.stringify(value);
+          let positionText = document.getElementById('ballInfo' + key).children[2];
+          positionText.innerHTML = 'Position: x: ' + value.x.toFixed(2) + ' y: ' + value.y.toFixed(2);
           continue;
         } else {
           let subDiv = document.createElement('div');
@@ -131,8 +127,12 @@
 
           subDiv.appendChild(button);
 
+          let colorSquare = document.createElement('div');
+          colorSquare.style = 'width: 10px; height: 10px; background-color: ' + value.colorHex;
+          subDiv.appendChild(colorSquare);
+
           let positionText = document.createElement('div');
-          positionText.innerHTML = 'Position: ' + JSON.stringify(value);
+          positionText.innerHTML = 'Position: x: ' + value.x.toFixed(2) + ' y: ' + value.y.toFixed(2);
           subDiv.appendChild(positionText);
 
           ballInfoContainer.appendChild(subDiv);
@@ -141,7 +141,7 @@
     });
 
     // Send a query to the browser process.
-    function sendQueryMessage() {
+    function sendTestQuery() {
       // Results in a call to the OnQuery method in client_impl.cc.
 
       wuiSendEvent('TestEvent', { test: 'test' })
@@ -172,7 +172,6 @@
     <div class="mainBody">
       <div class="container">
         <h1>Example Head Element</h1>
-        <button onclick="sendQueryMessage()">testEvent</button>
 
         <p>Autom incremental value on the left, on the right a manually incremented field</p>
 

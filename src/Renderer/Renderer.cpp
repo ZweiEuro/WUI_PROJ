@@ -4,6 +4,7 @@
 #include "webUiBinding.hpp"
 
 #include <allegro5/allegro_primitives.h>
+#include "Objects/Ball.hpp"
 namespace render
 {
     Renderer renderer = render::Renderer();
@@ -182,6 +183,19 @@ namespace render
 
                     cJSON_AddNumberToObject(thisBallInfo, "x", pos.x);
                     cJSON_AddNumberToObject(thisBallInfo, "y", pos.y);
+
+                    auto d = dynamic_cast<objects::Ball *>(renderable.get());
+
+                    if (d != nullptr)
+                    {
+                        auto col = d->getColor();
+                        unsigned char hex[3];
+                        al_unmap_rgb(col, &hex[0], &hex[1], &hex[2]);
+
+                        const char *hexString = fmt::format("#{:02x}{:02x}{:02x}", hex[0], hex[1], hex[2]).c_str();
+
+                        cJSON_AddStringToObject(thisBallInfo, "colorHex", hexString);
+                    }
 
                     cJSON_AddItemToObject(ballInfoObject, std::to_string(renderable->getId()).c_str(), thisBallInfo);
                 }

@@ -135,7 +135,11 @@ namespace render
                 memset(locked_region->data, 0, this->width * this->height * 4);
                 al_unlock_bitmap(this->m_osr_buffer);
 
-                wui::resizeUi(this->width, this->height);
+                if (wui::offscreenTabReady(this->wui_tab_id) == wui::WUI_OK)
+                {
+                    spdlog::info("Sending resize event to WUI");
+                    WUI_ERROR_CHECK(wui::resizeUi(this->wui_tab_id, this->width, this->height));
+                }
 
                 al_acknowledge_resize(m_display);
 
@@ -174,6 +178,7 @@ namespace render
                 m_l_renderables.lock();
                 for (auto &renderable : m_renderables)
                 {
+                    spdlog::info("Rendering ball with id: {}", renderable->getId());
                     renderable->render(width,
                                        height, delta_s);
 
@@ -199,26 +204,39 @@ namespace render
 
                     cJSON_AddItemToObject(ballInfoObject, std::to_string(renderable->getId()).c_str(), thisBallInfo);
                 }
-                m_l_renderables.unlock();
 
-                wui::sendEvent("BallInfo", ballInfoObject);
+                if (m_renderables.size() > 0)
+                {
+                    m_l_renderables.unlock();
+
+                    //                    wui::sendEvent(this->wui_tab_id, "BallInfo", ballInfoObject);
+                }
+                else
+                {
+                    m_l_renderables.unlock();
+                }
 
                 // draw OSR buffer over the screen,
-                if (this->m_l_osr_buffer_lock.try_lock() && this->wui_rgba_bitmap != nullptr)
+                if (this->m_l_osr_buffer_lock.try_lock())
                 {
                     // al_set_blender(ALLEGRO_ADD, ALLEGRO_ONE, ALLEGRO_ZERO);
 
                     // copy over bitmap
                     auto locked_region = al_lock_bitmap(m_osr_buffer, ALLEGRO_PIXEL_FORMAT_ARGB_8888, ALLEGRO_LOCK_WRITEONLY);
-                    memcpy(locked_region->data, wui_rgba_bitmap, width * height * 4);
+
+                    if (this->wui_rgba_bitmap != nullptr)
+                    {
+
+                        memcpy(locked_region->data, wui_rgba_bitmap, width * height * 4);
+                    }
+                    else
+                    {
+                        memset(locked_region->data, 0, width * height * 4);
+                    }
                     al_unlock_bitmap(m_osr_buffer);
 
                     this->m_l_osr_buffer_lock.unlock();
                     al_draw_bitmap(m_osr_buffer, 0, 0, 0);
-                }
-                else
-                {
-                    spdlog::warn("wui_rgba_bitmap is null");
                 }
 
                 al_flip_display();
@@ -285,12 +303,23 @@ namespace render
 
         spdlog::info("[Renderer] starting");
 
-        wui::registerEventListener("DeleteBall", [](const cJSON *load, cJSON *retval, std::string &exc) -> int
-                                   { return renderer.handleDeleteObject(load, retval, exc); });
-
-        assert(wui::startWui(&wui_rgba_bitmap, width, height) && "Failed to start WUI");
+        restartWui();
 
         m_render_thread = std::thread(&Renderer::renderLoop, this);
+    }
+
+    void Renderer::restartWui()
+    {
+        spdlog::info("[Renderer] restarting WUI");
+        if (this->wui_tab_id == 0)
+        {
+            WUI_ERROR_CHECK(wui::createOffscreenTab(this->wui_tab_id, &wui_rgba_bitmap, width, height));
+            //        wui::registerEventListener(this->wui_tab_id, "DeleteBall", [](const cJSON *load, cJSON *retval, std::string &exc) -> int{ return renderer.handleDeleteObject(load, retval, exc); });
+        }
+        else
+        {
+            spdlog::info("[Renderer]wui already running");
+        }
     }
 
     void Renderer::waitUntilEnd()

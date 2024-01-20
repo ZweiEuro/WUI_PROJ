@@ -11,6 +11,7 @@
 #include "Objects/Renderable.hpp"
 
 #include "webUiBinding.hpp"
+#include "webUiTypes.hpp"
 
 namespace render
 {
@@ -39,6 +40,7 @@ namespace render
         size_t fps = BASE_FPS;
 
     public:
+        wui::wui_tab_id_t wui_tab_id = 0;
         Renderer();
         ~Renderer();
 
@@ -84,6 +86,8 @@ namespace render
         void waitUntilEnd();
 
         int handleDeleteObject(const cJSON *load, cJSON *retval, std::string &exc);
+
+        void restartWui();
 
         // object management
     public:

@@ -74,6 +74,47 @@ int main(int argc, char *argv[])
 				return; })
 		.detach();
 
+	// debug 'o' key
+	std::thread([=]() -> void
+				{
+		while (true)
+		{
+			auto ok = input::wait_for_key(ALLEGRO_KEY_O);
+
+			if (!ok)
+			{
+				spdlog::info("Stop O listener");
+				return;
+			}
+
+					auto tmp = render::renderer.wui_tab_id;
+					render::renderer.wui_tab_id = 0;
+					WUI_ERROR_CHECK(wui::closeOffscreenTab(tmp));
+					spdlog::info("Destroyed tab {}", tmp);
+		
+					}
+				return; })
+		.detach();
+
+	// r key restart UI
+	std::thread([=]() -> void
+				{
+		while (true)
+		{
+			auto ok = input::wait_for_key(ALLEGRO_KEY_R);
+
+			if (!ok)
+			{
+				spdlog::info("Stop R listener");
+				return;
+			}
+
+					render::renderer.restartWui();
+		
+					}
+				return; })
+		.detach();
+
 	wui::CEFRunMessageLoop();
 
 	pthread_exit(NULL);

@@ -90,6 +90,9 @@ int main(int argc, char *argv[])
 			if (render::renderer.wui_tab_id>0){
 				auto tmp = render::renderer.wui_tab_id;
 			render::renderer.wui_tab_id = 0;
+
+			WUI_ERROR_CHECK(wui::unregisterEventListener(tmp, "DeleteBall")); // not strictly necessary, deleting the tab deletes the router that holds this callback
+
 			WUI_ERROR_CHECK(wui::closeOffscreenTab(tmp));
 			spdlog::info("Destroyed tab {}", tmp);
 			}

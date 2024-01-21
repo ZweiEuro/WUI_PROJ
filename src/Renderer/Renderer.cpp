@@ -96,6 +96,8 @@ namespace render
         // Opengl is not really multi-thread draw-safe
         this->init();
 
+        restartWui();
+
         // Start the timer
         al_start_timer(m_timer);
         m_running = true;
@@ -178,7 +180,7 @@ namespace render
                 m_l_renderables.lock();
                 for (auto &renderable : m_renderables)
                 {
-                    spdlog::info("Rendering ball with id: {}", renderable->getId());
+                    // spdlog::info("Rendering ball with id: {}", renderable->getId());
                     renderable->render(width,
                                        height, delta_s);
 
@@ -205,11 +207,28 @@ namespace render
                     cJSON_AddItemToObject(ballInfoObject, std::to_string(renderable->getId()).c_str(), thisBallInfo);
                 }
 
-                if (m_renderables.size() > 0)
+                static bool sentZeroBalls = false;
+
+                if (m_renderables.size() > 0 || sentZeroBalls == false)
                 {
+                    if (m_renderables.size() == 0)
+                    {
+                        sentZeroBalls = true;
+                    }
+                    else
+                    {
+
+                        sentZeroBalls = false;
+                    }
+
                     m_l_renderables.unlock();
 
-                    //                    wui::sendEvent(this->wui_tab_id, "BallInfo", ballInfoObject);
+                    if (wui::sendEvent(this->wui_tab_id, "BallInfo", ballInfoObject) == wui::WUI_ERR_BINDINGS_NO_LISTENER_IN_DOM)
+                    {
+                        // this would also return "ID UNKNOWN" in that case (most likely between restarts)
+                        // this can happen if during runtime the UI gets stopped and restarted
+                        spdlog::warn("No listener registered for BallInfo event");
+                    }
                 }
                 else
                 {
@@ -303,8 +322,6 @@ namespace render
 
         spdlog::info("[Renderer] starting");
 
-        restartWui();
-
         m_render_thread = std::thread(&Renderer::renderLoop, this);
     }
 
@@ -313,8 +330,10 @@ namespace render
         spdlog::info("[Renderer] restarting WUI");
         if (this->wui_tab_id == 0)
         {
-            WUI_ERROR_CHECK(wui::createOffscreenTab(this->wui_tab_id, &wui_rgba_bitmap, width, height));
-            //        wui::registerEventListener(this->wui_tab_id, "DeleteBall", [](const cJSON *load, cJSON *retval, std::string &exc) -> int{ return renderer.handleDeleteObject(load, retval, exc); });
+            WUI_ERROR_CHECK(wui::createOffscreenTab(this->wui_tab_id, &wui_rgba_bitmap, width, height, true));
+            WUI_ERROR_CHECK(
+                wui::registerEventListener(this->wui_tab_id, "DeleteBall", [](const cJSON *load, cJSON *retval, std::string &exc) -> int
+                                           { return renderer.handleDeleteObject(load, retval, exc); }))
         }
         else
         {

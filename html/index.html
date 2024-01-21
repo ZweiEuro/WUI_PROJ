@@ -108,7 +108,11 @@
 
         if (currentElement) {
           let positionText = document.getElementById('ballInfo' + key).children[2];
-          positionText.innerHTML = 'Position: x: ' + value.x.toFixed(2) + ' y: ' + value.y.toFixed(2);
+          positionText.innerHTML =
+            'Position: x: ' +
+            value.x.toLocaleString('de-DE', { minimumIntegerDigits: 8, minimumFractionDigits: 2, maximumFractionDigits: 2 }) +
+            ' y: ' +
+            value.y.toLocaleString('de-DE', { minimumIntegerDigits: 8, minimumFractionDigits: 2, maximumFractionDigits: 2 });
           continue;
         } else {
           let subDiv = document.createElement('div');
@@ -129,7 +133,11 @@
           subDiv.appendChild(colorSquare);
 
           let positionText = document.createElement('div');
-          positionText.innerHTML = 'Position: x: ' + value.x.toFixed(2) + ' y: ' + value.y.toFixed(2);
+          positionText.innerHTML =
+            'Position: x: ' +
+            value.x.toLocaleString('de-DE', { minimumIntegerDigits: 8, minimumFractionDigits: 2, maximumFractionDigits: 2 }) +
+            ' y: ' +
+            value.y.toLocaleString('de-DE', { minimumIntegerDigits: 8, minimumFractionDigits: 2, maximumFractionDigits: 2 });
           subDiv.appendChild(positionText);
 
           ballInfoContainer.appendChild(subDiv);

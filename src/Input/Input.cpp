@@ -4,6 +4,8 @@
 
 #include <spdlog/spdlog.h>
 
+#include <Renderer/Renderer.hpp>
+
 namespace input
 {
     // Game eveng queue (keyboard, mouse etc)
@@ -23,7 +25,7 @@ namespace input
     // listen to all input events
     std::thread m_input_thread;
 
-    std::atomic<wui_enums::SubSystemStates> m_state(wui_enums::SubSystemStates::STARTING);
+    std::atomic<proj_enums::SubSystemStates> m_state(proj_enums::SubSystemStates::STARTING);
 
     // prototype
     void input_loop();
@@ -38,7 +40,7 @@ namespace input
 
     bool wait_for_key(int keycode)
     {
-        if (m_state != wui_enums::SubSystemStates::RUNNING)
+        if (m_state != proj_enums::SubSystemStates::RUNNING)
         {
             spdlog::error("[Input] wait_for_key called while not running");
             return false;
@@ -56,7 +58,7 @@ namespace input
 
             if (event.type == USER_BASE_EVENT)
             {
-                if (event.user.data1 == (int)wui_enums::SubSystemStates::SHUTTING_DOWN)
+                if (event.user.data1 == (int)proj_enums::SubSystemStates::SHUTTING_DOWN)
                 {
                     ret = false;
                     goto wait_for_key_end;
@@ -82,7 +84,7 @@ namespace input
     bool wait_for_mouse_button(int button, vec2i &mouse_pos)
     {
 
-        if (m_state != wui_enums::SubSystemStates::RUNNING)
+        if (m_state != proj_enums::SubSystemStates::RUNNING)
         {
             spdlog::error("[Input] wait_for_mouse_button called while not running");
             return false;
@@ -101,7 +103,7 @@ namespace input
 
             if (event.type == USER_BASE_EVENT)
             {
-                if (event.user.data1 == (int)wui_enums::SubSystemStates::SHUTTING_DOWN)
+                if (event.user.data1 == (int)proj_enums::SubSystemStates::SHUTTING_DOWN)
                 {
                     ret = false;
                     goto wait_for_mouse_button_end;
@@ -139,9 +141,9 @@ namespace input
     void input_loop()
     {
         // start the main receiving loop
-        m_state = wui_enums::SubSystemStates::RUNNING;
+        m_state = proj_enums::SubSystemStates::RUNNING;
 
-        while (m_state == wui_enums::SubSystemStates::RUNNING)
+        while (m_state == proj_enums::SubSystemStates::RUNNING)
         {
             ALLEGRO_EVENT event;
 
@@ -162,7 +164,7 @@ namespace input
 
                 const wui::wui_mouse_event_t ev = convertMouseEvent(event);
 
-                wui::CEFSendMouseMoveEvent(ev, false);
+                wui::sendMouseMoveEvent(render::renderer.wui_tab_id, ev, false);
             }
 
             break;
@@ -175,7 +177,7 @@ namespace input
                 spdlog::info("[Input] mouse button down {}, @ {} {}", event.mouse.button == 1 ? "left" : "right", event.mouse.x, event.mouse.y);
 
                 const wui::wui_mouse_event_t ev = convertMouseEvent(event);
-                wasUiEvent = wui::CEFSendMouseClickEvent(ev, event.mouse.button == 1 ? wui::MBT_LEFT : wui::MBT_RIGHT, false, 1);
+                wasUiEvent = wui::sendMouseClickEvent(render::renderer.wui_tab_id, ev, event.mouse.button == 1 ? wui::MBT_LEFT : wui::MBT_RIGHT, false, 1) == wui::WUI_HIT_UI;
 
                 break;
             }
@@ -184,7 +186,7 @@ namespace input
                 spdlog::info("[Input] mouse button up {}, @ {} {}", event.mouse.button == 1 ? "left" : "right", event.mouse.x, event.mouse.y);
 
                 const wui::wui_mouse_event_t ev = convertMouseEvent(event);
-                wasUiEvent = wui::CEFSendMouseClickEvent(ev, event.mouse.button == 1 ? wui::MBT_LEFT : wui::MBT_RIGHT, true, 1);
+                wasUiEvent = wui::sendMouseClickEvent(render::renderer.wui_tab_id, ev, event.mouse.button == 1 ? wui::MBT_LEFT : wui::MBT_RIGHT, true, 1) == wui::WUI_HIT_UI;
                 break;
             }
 
@@ -221,14 +223,14 @@ namespace input
         al_uninstall_keyboard();
         al_uninstall_mouse();
 
-        m_state = wui_enums::SubSystemStates::SHUTDOWN;
+        m_state = proj_enums::SubSystemStates::SHUTDOWN;
         return;
     }
 
     void start()
     {
 
-        if (m_state != wui_enums::SubSystemStates::STARTING)
+        if (m_state != proj_enums::SubSystemStates::STARTING)
         {
             spdlog::error("[Input] start called while not in STARTING state");
             return;
@@ -254,17 +256,17 @@ namespace input
 
     void shutdown()
     {
-        if (m_state != wui_enums::SubSystemStates::RUNNING)
+        if (m_state != proj_enums::SubSystemStates::RUNNING)
         {
             spdlog::error("[Input] shutdown called while not running");
             return;
         }
         spdlog::info("[Input] shutdown called");
 
-        m_state = wui_enums::SubSystemStates::SHUTTING_DOWN;
+        m_state = proj_enums::SubSystemStates::SHUTTING_DOWN;
 
         ALLEGRO_EVENT ev = {};
-        ev.user.data1 = (int)wui_enums::SubSystemStates::SHUTTING_DOWN;
+        ev.user.data1 = (int)proj_enums::SubSystemStates::SHUTTING_DOWN;
         ev.type = USER_BASE_EVENT;
 
         al_emit_user_event(&m_abort_event_source, &ev, nullptr);

@@ -21,7 +21,7 @@
 int main(int argc, char *argv[])
 {
 	// first thing to call in your program (Internal Fork)
-	wui::CEFInit(argc, argv);
+	wui::WuiInit(argc, argv);
 
 	// init renderer and display
 
@@ -46,7 +46,7 @@ int main(int argc, char *argv[])
 					}
 
 					spdlog::info("[Main] Shutting down");
-					wui::CEFShutdown();
+					wui::shutdown();
 					render::renderer.shutdown();
 					input::shutdown();
 					
@@ -87,10 +87,13 @@ int main(int argc, char *argv[])
 				return;
 			}
 
-					auto tmp = render::renderer.wui_tab_id;
-					render::renderer.wui_tab_id = 0;
-					WUI_ERROR_CHECK(wui::closeOffscreenTab(tmp));
-					spdlog::info("Destroyed tab {}", tmp);
+			if (render::renderer.wui_tab_id>0){
+				auto tmp = render::renderer.wui_tab_id;
+			render::renderer.wui_tab_id = 0;
+			WUI_ERROR_CHECK(wui::closeOffscreenTab(tmp));
+			spdlog::info("Destroyed tab {}", tmp);
+			}
+
 		
 					}
 				return; })
@@ -115,7 +118,7 @@ int main(int argc, char *argv[])
 				return; })
 		.detach();
 
-	wui::CEFRunMessageLoop();
+	wui::runTimeLoop();
 
 	pthread_exit(NULL);
 }

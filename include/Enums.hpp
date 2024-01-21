@@ -3,7 +3,7 @@
 
 // User events from allegro are programmers events.
 // We use it to coordinate a controlled shutdown between the systems.
-namespace wui_enums
+namespace proj_enums
 {
 #define USER_BASE_EVENT ALLEGRO_GET_EVENT_TYPE('w', 'g', 'u', 'i') // random init
 

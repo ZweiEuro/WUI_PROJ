@@ -37,7 +37,7 @@ int main(int argc, char *argv[])
 	// esc shutdown
 	std::thread([=]() -> void
 				{
-					auto ok = input::wait_for_key(ALLEGRO_KEY_ESCAPE);
+					auto ok = input::wait_for_keys({ALLEGRO_KEY_ESCAPE,ALLEGRO_KEY_LCTRL});
 
 					if (!ok)
 					{
@@ -79,7 +79,7 @@ int main(int argc, char *argv[])
 				{
 		while (true)
 		{
-			auto ok = input::wait_for_key(ALLEGRO_KEY_O);
+			auto ok = input::wait_for_keys({ALLEGRO_KEY_C,ALLEGRO_KEY_LCTRL});
 
 			if (!ok)
 			{
@@ -107,7 +107,7 @@ int main(int argc, char *argv[])
 				{
 		while (true)
 		{
-			auto ok = input::wait_for_key(ALLEGRO_KEY_R);
+			auto ok = input::wait_for_keys({ALLEGRO_KEY_R, ALLEGRO_KEY_LCTRL});
 
 			if (!ok)
 			{

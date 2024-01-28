@@ -2,6 +2,7 @@
 #include <allegro5/allegro.h>
 #include <mutex>
 #include <thread>
+#include <vector>
 #include <atomic>
 #include "Math/vec.hpp"
 
@@ -25,6 +26,9 @@ namespace input
     // Wait for external events
     // returns false if the system is shutting down
     bool wait_for_key(int keycode);
+
+    // wait until _all_ codes are pressed at once
+    bool wait_for_keys(std::vector<int> keycodes);
 
     // Wait for external events
     // returns false if the system is shutting down

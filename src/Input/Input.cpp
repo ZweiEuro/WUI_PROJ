@@ -41,13 +41,26 @@ namespace input
 
     bool wait_for_key(int keycode)
     {
+
+        return wait_for_keys({keycode});
+    }
+
+    bool wait_for_keys(std::vector<int> keycodes)
+    {
+        if (keycodes.size() == 0)
+        {
+            spdlog::error("[Input] wait_for_keys called with no keys");
+            return false;
+        }
+
         if (m_state != proj_enums::SubSystemStates::RUNNING)
         {
             spdlog::error("[Input] wait_for_key called while not running");
             return false;
         }
 
-        spdlog::info("[Input] waiting for key {}", keycode);
+        std::vector<bool> pressed_keys = std::vector<bool>(keycodes.size(), false);
+
         auto queue = al_create_event_queue();
         al_register_event_source(queue, &m_manager_event_source);
         al_register_event_source(queue, &m_abort_event_source);
@@ -62,21 +75,41 @@ namespace input
                 if (event.user.data1 == (int)proj_enums::SubSystemStates::SHUTTING_DOWN)
                 {
                     ret = false;
-                    goto wait_for_key_end;
+                    goto wait_for_keys_end;
                 }
             }
 
             if (event.type == ALLEGRO_EVENT_KEY_DOWN)
             {
-                if (event.keyboard.keycode == keycode)
+                for (size_t i = 0; i < keycodes.size(); i++)
                 {
-                    ret = true;
-                    goto wait_for_key_end;
+                    if (event.keyboard.keycode == keycodes[i])
+                    {
+                        pressed_keys[i] = true;
+                    }
                 }
+            }
+
+            if (event.type == ALLEGRO_EVENT_KEY_UP)
+            {
+                for (size_t i = 0; i < keycodes.size(); i++)
+                {
+                    if (event.keyboard.keycode == keycodes[i])
+                    {
+                        pressed_keys[i] = false;
+                    }
+                }
+            }
+
+            if (std::all_of(pressed_keys.begin(), pressed_keys.end(), [](bool v)
+                            { return v; }))
+            {
+                ret = true;
+                goto wait_for_keys_end;
             }
         }
 
-    wait_for_key_end:
+    wait_for_keys_end:
         al_unregister_event_source(queue, &m_manager_event_source);
         al_destroy_event_queue(queue);
         return ret;
@@ -90,8 +123,6 @@ namespace input
             spdlog::error("[Input] wait_for_mouse_button called while not running");
             return false;
         }
-
-        spdlog::info("[Input] waiting for mouse button {}", button);
 
         auto queue = al_create_event_queue();
         al_register_event_source(queue, &m_manager_event_source);

@@ -249,12 +249,20 @@ namespace input
             case ALLEGRO_EVENT_KEY_UP:
             case ALLEGRO_EVENT_KEY_DOWN:
             {
-                if (event.keyboard.repeat)
-                {
-                    break;
-                }
+                wui::wui_text_input_mode_t ret = wui::WUI_TEXT_INPUT_MODE_ERROR;
+                WUI_ERROR_CHECK(wui::getCurrentTextInputMode(render::renderer.wui_tab_id, ret));
 
-                handleKeyEvent(render::renderer.wui_tab_id, event);
+                if (ret != wui::WUI_TEXT_INPUT_MODE_NONE)
+                {
+
+                    if (event.keyboard.repeat)
+                    {
+                        break;
+                    }
+
+                    handleKeyEvent(render::renderer.wui_tab_id, event);
+                    wasUiEvent = true;
+                }
             }
 
             break;

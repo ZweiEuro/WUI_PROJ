@@ -95,11 +95,12 @@ namespace input
             .repeat = event.keyboard.repeat,
         };
 
-        if (event.keyboard.unichar == 0)
+        if (event.keyboard.unichar == 0 || event.keyboard.keycode == ALLEGRO_KEY_DELETE)
         {
             ev.windows_key_code = event.keyboard.keycode;
 
-            switch (event.keyboard.keycode)
+            // The Delete key does not map 1:1 to the windows key (like backspace, null, etc.)
+            switch (event.keyboard.keycode )
             {
             case ALLEGRO_KEY_LEFT:
                 ev.windows_key_code = wui::VKEY_LEFT;
@@ -115,6 +116,10 @@ namespace input
 
             case ALLEGRO_KEY_DOWN:
                 ev.windows_key_code = wui::VKEY_DOWN;
+                break;
+
+            case ALLEGRO_KEY_DELETE:
+                ev.windows_key_code = wui::VKEY_DELETE;
                 break;
 
             default:
@@ -133,7 +138,7 @@ namespace input
                 // We opt to discard it when the two are not equal when control is pressed
                 return wui::WUI_OK;
             }
-            return wui::sendKeyEvent(tab_id, ev);
         }
+        return wui::sendKeyEvent(tab_id, ev);
     }
 }

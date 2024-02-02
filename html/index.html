@@ -171,6 +171,10 @@
       value++;
       document.getElementById('auto').value = value;
     }, 1000);
+
+    function setFocus() {
+      document.getElementById('scratchPad').focus();
+    }
   </script>
 
   <body>
@@ -183,9 +187,11 @@
         <input type="text" id="auto" value="0" />
         <input type="text" id="manual" value="0" />
 
-        <input type="text" id="scratchPad" value="Write stuff here" />
+        <textarea id="scratchPad">Write stuff here</textarea>
 
-        <input type="button" onclick="incrementValue()" value="Increment Value" />
+        <button onclick="setFocus()">Set focus</button>
+
+        <button onclick="incrementValue()">Increment value</button>
 
         <div style="display: flex; justify-content: flex-start; gap: 20px">
           <div class="colorBox" style="background: linear-gradient(to bottom, #ff0000ff, #ff0000ff)">red</div>

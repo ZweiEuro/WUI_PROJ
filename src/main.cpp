@@ -21,7 +21,7 @@
 int main(int argc, char *argv[])
 {
 	// first thing to call in your program (Internal Fork)
-	wui::WuiInit(argc, argv);
+	WUI_ERROR_CHECK(wui::WuiInit());
 
 	// init renderer and display
 

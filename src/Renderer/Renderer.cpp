@@ -119,6 +119,7 @@ namespace render
                 break;
             case ALLEGRO_EVENT_DISPLAY_CLOSE:
                 m_running = false;
+                wui::shutdown();
                 break;
             case ALLEGRO_EVENT_DISPLAY_RESIZE:
             {

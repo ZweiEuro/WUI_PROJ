@@ -11,27 +11,25 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/build/${CMAKE_BUILD_TYPE})
 
-#source files
+# source files
 file(GLOB_RECURSE sources src/*.cpp)
 add_executable(${PROJECT_NAME} ${sources})
 
-#lib files
+# lib files
 add_subdirectory(libs)
 
 # copy ui files
-cef_copy_ui_files("html")
+WUI_COPY_HTML_FILES("html")
 cef_copy_dependencies(${PROJECT_NAME} "libs/wui")
 
-#header files 
+# header files
 target_include_directories(${PROJECT_NAME} PRIVATE include)
-
 
 # Libraries
 find_package(spdlog REQUIRED)
 find_package(Threads REQUIRED)
 
-
-target_link_libraries(${PROJECT_NAME} PRIVATE 
+target_link_libraries(${PROJECT_NAME} PRIVATE
   allegro
   allegro_image
   allegro_primitives
@@ -40,5 +38,3 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
   allegro_dialog
   spdlog::spdlog
   Threads::Threads)
-
-
